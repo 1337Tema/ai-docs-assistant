@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from app.logger import logger
 from app.storage import save_document
-#from app.health import check_all_services
+from app.health import check_all_services
 from app.agents import generate_and_validate_documentation
 from app.rag import initialize_rag_from_docs, search_documentation
 from app.schemas import SearchRequest, SearchResponse, GenerateRequest, GenerateResponse
@@ -28,8 +28,14 @@ app = FastAPI(title='AI Docs Assistant', lifespan=lifespan)
 
 
 @app.get('/health')
-def health_check():
-    return {'status': 'ok'}
+async def health_check():
+    """
+    Расширенный health-check:
+    - зависимости (Qdrant, Ollama),
+    - данные (docs/),
+    - функциональность (canary RAG-запрос).
+    """
+    return await check_all_services()
 
 
 @app.post('/search', response_model=SearchResponse)
